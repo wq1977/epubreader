@@ -1,0 +1,150 @@
+const level = require("classic-level");
+
+let db,
+  booksRoot,
+  books = {};
+const api = {
+  versions() {
+    return process.versions;
+  },
+  init(root) {
+    db = new level.ClassicLevel(require("path").join(root, "level"), {
+      valueEncoding: "json",
+    });
+    booksRoot = require("path").join(root, "books");
+    if (!require("fs").existsSync(booksRoot)) {
+      require("fs").mkdirSync(booksRoot);
+    }
+    const Koa = require("koa");
+    const serve = require("koa-static");
+    const cors = require("koa2-cors");
+    const app = new Koa();
+    app.use(
+      cors({
+        origin: function (ctx) {
+          return ctx.header.origin;
+        }, // 允许发来请求的域名
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // 设置所允许的 HTTP请求方法
+        credentials: true,
+      })
+    );
+    app.use(serve(booksRoot));
+    app.listen(process.env.PORT || 8989, "0.0.0.0");
+  },
+  async lookup(prefix) {
+    const iterator = db.iterator();
+    const result = [];
+    try {
+      let entry;
+      await iterator.seek(prefix);
+      while ((entry = await iterator.next())) {
+        let [key, value] = entry;
+        key = key.toString();
+        if (!key.startsWith(prefix)) break;
+        result.push({ key, value });
+      }
+      return result;
+    } catch (err) {
+      log.error(err, "seek error");
+    }
+  },
+  async load() {
+    const books = await api.lookup("/books/");
+    return books.map((book) => ({
+      ...book.value,
+      id: book.key.substr(7),
+    }));
+  },
+  async loadBook(event, id) {
+    const targetPath = require("path").join(booksRoot, `${id}.epub`);
+    const EPub = require("epub");
+    const epub = await new Promise((r) => {
+      const epub = new EPub(targetPath);
+      epub.on("end", function () {
+        r(epub);
+      });
+      epub.parse();
+    });
+    return epub;
+  },
+  async addBook(event, book) {
+    const id = require("crypto")
+      .createHash("md5")
+      .update(require("fs").readFileSync(book.path))
+      .digest("hex");
+    const targetPath = require("path").join(booksRoot, id);
+    if (!require("fs").existsSync(targetPath)) {
+      require("fs").mkdirSync(targetPath);
+      const StreamZip = require("node-stream-zip");
+      const zip = new StreamZip.async({ file: book.path });
+      await zip.extract(null, targetPath);
+      await zip.close();
+    }
+    const entry = require("path").join(targetPath, "META-INF", "container.xml");
+    if (!require("fs").existsSync(entry)) throw new Error("invalid epub");
+    var parser = require("xml2json");
+    var json = JSON.parse(
+      parser.toJson(require("fs").readFileSync(entry).toString())
+    );
+    const rootfile = json.container.rootfiles.rootfile["full-path"];
+    const opfPath = require("path").join(targetPath, rootfile);
+    if (!require("fs").existsSync(opfPath)) throw new Error("invalid opf Path");
+    json = JSON.parse(
+      parser.toJson(require("fs").readFileSync(opfPath).toString())
+    );
+    const title = json.package.metadata["dc:title"] || "";
+    const publisher = json.package.metadata["dc:publisher"] || "";
+    const coverMeta = (json.package.metadata.meta || []).filter(
+      (item) => item.name == "cover"
+    );
+    let cover = "";
+    if (coverMeta.length) {
+      cover = coverMeta[0].content;
+    }
+    const result = {
+      id,
+      title,
+      publisher,
+      cover,
+      manifest: json.package.manifest.item.reduce((r, i) => {
+        r[i.id] = i;
+        return r;
+      }, {}),
+    };
+    const tockey = json.package.spine.toc;
+    if (tockey) {
+      const href = result.manifest[tockey].href;
+      const tocPath = require("path").join(
+        require("path").dirname(opfPath),
+        href
+      );
+      if (require("fs").existsSync(tocPath)) {
+        const tocJson = JSON.parse(
+          parser.toJson(require("fs").readFileSync(tocPath).toString())
+        );
+        function parseToc(node) {
+          const result = [];
+          for (let point of node.navPoint || []) {
+            const node = {
+              id: point.id,
+              order: point.playOrder,
+              title: point.navLabel.text,
+              href: point.content.src,
+            };
+            if (point.navPoint) {
+              node.children = parseToc(point);
+            }
+            result.push(node);
+          }
+          return result;
+        }
+        const toc = parseToc(tocJson.ncx.navMap);
+        result.toc = toc;
+      }
+    }
+    await db.put(`/books/${id}`, result);
+    return result;
+  },
+};
+
+export default api;
