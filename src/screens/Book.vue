@@ -32,7 +32,7 @@ function click(node) {
         <div> {{ book.title || book.publisher }}</div>
         <div class="flex">
             <iframe class="flex-1 h-screen" :src="store.resourceUrl(book.id, chapid)" frameborder="0"></iframe>
-            <div class="w-[300px] border">
+            <div class="w-[300px] border max-h-screen overflow-auto">
                 <TreeNode :node="chap" v-on:node="click" class="p-1 cursor-pointer"
                     v-for="chap in book.toc.sort((a, b) => a.order - b.order)" />
             </div>

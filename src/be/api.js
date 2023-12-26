@@ -110,6 +110,7 @@ const api = {
         r[i.id] = i;
         return r;
       }, {}),
+      flow: json.package.spine.itemref.map((item) => item.idref),
     };
     const tockey = json.package.spine.toc;
     if (tockey) {
