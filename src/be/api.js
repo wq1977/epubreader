@@ -1,8 +1,50 @@
+import Reader from "./reader";
 const level = require("classic-level");
 
 let db,
   booksRoot,
   books = {};
+
+async function serveReaderScript(ctx, next) {
+  const path = ctx.request.url;
+  if (path.endsWith("/reader.js")) {
+    ctx.body = `(${Reader.toString()})()`;
+  } else {
+    await next();
+  }
+}
+
+async function serveXHTML(ctx, next) {
+  const path = ctx.request.url;
+  let latestVersion = "";
+  if (path.endsWith(".xhtml")) {
+    let html = require("fs").readFileSync(`${booksRoot}${path}`).toString();
+    try {
+      latestVersion = await db.get(`/pages/${path}`);
+    } catch (err) {}
+    if (latestVersion) {
+      //将body以内的部分换成新版本。
+      const bodyRegex = /<body(\s+[^>]*)?>[\s\S]*?<\/body>/i;
+      const match = bodyRegex.exec(html);
+      if (match) {
+        const bodyAttributes = match[1] || "";
+        html = html.replace(
+          bodyRegex,
+          `<body${bodyAttributes}>${latestVersion}</body>`
+        );
+      }
+    }
+    //给html添加特定的script header
+    html = html.replace(
+      "</head>",
+      '<script src="/reader.js"></script>\n</header>'
+    );
+    ctx.body = html;
+  } else {
+    await next();
+  }
+}
+
 const api = {
   versions() {
     return process.versions;
@@ -28,6 +70,8 @@ const api = {
         credentials: true,
       })
     );
+    app.use(serveReaderScript);
+    app.use(serveXHTML);
     app.use(serve(booksRoot));
     app.listen(process.env.PORT || 8989, "0.0.0.0");
   },
