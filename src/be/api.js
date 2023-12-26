@@ -1,4 +1,3 @@
-import Reader from "./reader";
 const level = require("classic-level");
 
 let db,
@@ -8,7 +7,9 @@ let db,
 async function serveReaderScript(ctx, next) {
   const path = ctx.request.url;
   if (path.endsWith("/reader.js")) {
-    ctx.body = `(${Reader.toString()})()`;
+    ctx.body = require("fs")
+      .readFileSync(require("path").join(__dirname, "reader.js"))
+      .toString();
   } else {
     await next();
   }

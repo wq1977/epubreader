@@ -28,9 +28,20 @@ onMounted(() => {
             }
         }
     }
+    function prevPage() {
+        for (let i = 1; i < book.value.flow.length; i++) {
+            if (book.value.manifest[book.value.flow[i]].href == chapid.value) {
+                chapid.value = book.value.manifest[book.value.flow[i - 1]].href
+                break
+            }
+        }
+    }
+
     window.addEventListener('message', function (event) {
         if (event.data == 'nextpage') {
             nextPage()
+        } else if (event.data == 'prevpage') {
+            prevPage()
         }
     })
 })
@@ -42,7 +53,8 @@ onMounted(() => {
                 <TreeNode :node="chap" v-on:node="click" class="p-1 cursor-pointer"
                     v-for="chap in book.toc.sort((a, b) => a.order - b.order)" />
             </div>
-            <iframe class="flex-1 h-screen border p-5" :src="store.resourceUrl(book.id, chapid)" frameborder="0"></iframe>
+            <iframe v-if="chapid" class="flex-1 h-screen border p-5" :src="store.resourceUrl(book.id, chapid)"
+                frameborder="0"></iframe>
         </div>
     </div>
 </template>
