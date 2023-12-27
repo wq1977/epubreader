@@ -100,8 +100,15 @@ const api = {
       id: book.key.substr(7),
     }));
   },
-  pinyin(event, text) {
+  async save(event, data) {
+    const { params } = data;
+    const { html, path } = params[0];
+    await db.put(`/pages/${path}`, html);
+  },
+  pinyin(event, data) {
     const { pinyin } = require("pinyin");
+    const { params } = data;
+    const [text] = params;
     return pinyin(text);
   },
   async loadBook(event, id) {

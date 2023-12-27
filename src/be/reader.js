@@ -4,6 +4,9 @@ function addStyle() {
 img {
     max-width: 100%;
 }    
+.qgmark{
+    background-color: #ffcc00;
+}
 #customContextMenu {
     display: none;
     position: absolute;
@@ -46,27 +49,110 @@ async function call(name, ...params) {
     window.parent.postMessage({ name, params, type: "call" }, "*");
   });
 }
+
+async function doRemovePizhu() {
+  const text = window.getSelection().toString();
+  if (!text || text.length > 10) {
+    console.log("不能注音");
+    return;
+  }
+  var range = getSelection().getRangeAt(0);
+  var selectedHtml = range.cloneContents();
+  const div = document.createElement("div");
+  div.appendChild(selectedHtml);
+  const words = div.querySelectorAll(".pz");
+  for (let word of [...words]) {
+    word.parentNode.removeChild(word);
+  }
+  range.deleteContents();
+  range.insertNode(document.createTextNode(div.innerText));
+  await save();
+}
+
+async function doRemovePinyin() {
+  const text = window.getSelection().toString();
+  if (!text || text.length > 10) {
+    console.log("不能注音");
+    return;
+  }
+  var range = getSelection().getRangeAt(0);
+  var selectedHtml = range.cloneContents();
+  const div = document.createElement("div");
+  div.appendChild(selectedHtml);
+  const words = div.querySelectorAll("ruby");
+  for (let word of [...words]) {
+    const pinyin = word.querySelector("rt");
+    if (pinyin) {
+      word.removeChild(pinyin);
+    }
+  }
+  range.deleteContents();
+  range.insertNode(document.createTextNode(div.innerText));
+  await save();
+}
+
+async function doPizhu() {
+  const text = window.getSelection().toString();
+  if (!text || text.length > 10) {
+    console.log("不能注音");
+    return;
+  }
+  const result = await call("prompt", "你想说点什么？");
+  console.log("call prompt return", result);
+  if (result) {
+    var replacementHTML = `<span class="qgmark">${text}</span><span class="pz"><img class="pi" src="../Images/pp.jpg">${result}</span>`;
+    const newnode = document.createElement("span");
+    newnode.innerHTML = replacementHTML;
+    var range = getSelection().getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(newnode);
+    await save();
+  }
+}
+
+async function doPinyin() {
+  const text = window.getSelection().toString();
+  if (!text || text.length > 10) {
+    console.log("不能注音");
+    return;
+  }
+  const result = await call("pinyin", text);
+  if (result.length == text.length) {
+    var replacementHTML = text
+      .split("")
+      .map((char, idx) => `<ruby>${char}<rt>${result[idx][0]}</rt></ruby>`)
+      .join("");
+    const newnode = document.createElement("span");
+    newnode.innerHTML = replacementHTML;
+    var range = getSelection().getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(newnode);
+    await save();
+  }
+}
+
+async function save() {
+  const div = document.createElement("div");
+  div.innerHTML = document.body.innerHTML;
+  const cmenu = div.querySelector("#customContextMenu");
+  div.removeChild(cmenu);
+  await call("save", {
+    path: location.pathname,
+    html: div.innerHTML,
+  });
+}
+
 async function handleMenuClick(e, item) {
   e.preventDefault();
   hideContextMenu();
   if (item.textContent == "注音") {
-    const text = window.getSelection().toString();
-    if (!text || text.length > 10) {
-      console.log("不能注音");
-      return;
-    }
-    const result = await call("pinyin", text);
-    if (result.length == text.length) {
-      var replacementHTML = text
-        .split("")
-        .map((char, idx) => `<ruby>${char}<rt>${result[idx][0]}</rt></ruby>`)
-        .join("");
-      const newnode = document.createElement("span");
-      newnode.innerHTML = replacementHTML;
-      var range = getSelection().getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(newnode);
-    }
+    await doPinyin();
+  } else if (item.textContent == "移除注音") {
+    await doRemovePinyin();
+  } else if (item.textContent == "添加批注") {
+    await doPizhu();
+  } else if (item.textContent == "移除批注") {
+    await doRemovePizhu();
   }
 }
 function addContextMenu() {
@@ -81,9 +167,9 @@ function addContextMenu() {
   const div = document.createElement("div");
   div.id = "customContextMenu";
   div.innerHTML = `<a href="#">注音</a>
-  <a href="#">添加备注</a>
+  <a href="#">添加批注</a>
   <a href="#">移除注音</a>
-  <a href="#">移除备注</a>`;
+  <a href="#">移除批注</a>`;
   for (let item of [...div.querySelectorAll("a")]) {
     item.onclick = (e) => handleMenuClick(e, item);
   }
