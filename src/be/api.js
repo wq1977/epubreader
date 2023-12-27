@@ -1,3 +1,4 @@
+import { shell } from "electron";
 const level = require("classic-level");
 
 let db,
@@ -100,10 +101,22 @@ const api = {
       id: book.key.substr(7),
     }));
   },
+  async recovery(event, data) {
+    const { params } = data;
+    const { path } = params[0];
+    await db.del(`/pages/${path}`);
+  },
   async save(event, data) {
     const { params } = data;
     const { html, path } = params[0];
     await db.put(`/pages/${path}`, html);
+  },
+  async search(event, data) {
+    const { params } = data;
+    const text = params[0];
+    shell.openExternal(
+      `https://zh.wiktionary.org/wiki/${encodeURIComponent(text)}`
+    );
   },
   pinyin(event, data) {
     const { pinyin } = require("pinyin");

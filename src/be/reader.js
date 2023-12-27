@@ -110,6 +110,15 @@ async function doPizhu() {
   }
 }
 
+async function doSearch() {
+  const text = window.getSelection().toString();
+  if (!text || text.length > 10) {
+    console.log("不能注音");
+    return;
+  }
+  await call("search", text);
+}
+
 async function doPinyin() {
   const text = window.getSelection().toString();
   if (!text || text.length > 10) {
@@ -153,6 +162,13 @@ async function handleMenuClick(e, item) {
     await doPizhu();
   } else if (item.textContent == "移除批注") {
     await doRemovePizhu();
+  } else if (item.textContent == "搜索") {
+    await doSearch();
+  } else if (item.textContent == "恢复页面") {
+    await call("recovery", {
+      path: location.pathname,
+    });
+    location.reload();
   }
 }
 function addContextMenu() {
@@ -168,6 +184,8 @@ function addContextMenu() {
   div.id = "customContextMenu";
   div.innerHTML = `<a href="#">注音</a>
   <a href="#">添加批注</a>
+  <a href="#">搜索</a>
+  <a href="#">恢复页面</a>
   <a href="#">移除注音</a>
   <a href="#">移除批注</a>`;
   for (let item of [...div.querySelectorAll("a")]) {
