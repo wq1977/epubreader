@@ -21,16 +21,22 @@ function click(node) {
 
 onMounted(() => {
     function nextPage() {
+        if (!chapid.value) return;
         for (let i = 0; i < book.value.flow.length - 1; i++) {
-            if (book.value.manifest[book.value.flow[i]].href == chapid.value) {
+            const cleanFlowHref = book.value.manifest[book.value.flow[i]].href.split('#')[0]
+            const cleanCurrentHref = chapid.value.split('#')[0]
+            if (cleanFlowHref == cleanCurrentHref) {
                 chapid.value = book.value.manifest[book.value.flow[i + 1]].href
                 break
             }
         }
     }
     function prevPage() {
+        if (!chapid.value) return;
         for (let i = 1; i < book.value.flow.length; i++) {
-            if (book.value.manifest[book.value.flow[i]].href == chapid.value) {
+            const cleanFlowHref = book.value.manifest[book.value.flow[i]].href.split('#')[0]
+            const cleanCurrentHref = chapid.value.split('#')[0]
+            if (cleanFlowHref == cleanCurrentHref) {
                 chapid.value = book.value.manifest[book.value.flow[i - 1]].href
                 break
             }
@@ -38,6 +44,7 @@ onMounted(() => {
     }
 
     window.addEventListener('message', function (event) {
+        console.log('received from client', event)
         if (event.data == 'nextpage') {
             nextPage()
         } else if (event.data == 'prevpage') {

@@ -36,9 +36,14 @@ async function serveXHTML(ctx, next) {
       }
     }
     //给html添加特定的script header
+    const extraStyle = `
+img {
+  max-width: 100%;
+}    
+    `;
     html = html.replace(
       "</head>",
-      '<script src="/reader.js"></script>\n</header>'
+      `<style>${extraStyle}</style>\n<script src="/reader.js"></script>\n</header>`
     );
     ctx.body = html;
   } else {
