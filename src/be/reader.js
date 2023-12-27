@@ -7,6 +7,9 @@ img {
 .qgmark{
     background-color: #ffcc00;
 }
+p{
+    line-height:200% !important;
+}
 #customContextMenu {
     display: none;
     position: absolute;
@@ -236,11 +239,33 @@ function addTurnPageByKeyboard() {
     }
   });
 }
+
+function addCommandHandler() {
+  function handleCommand(event) {
+    if (event.data.name == "config") {
+      const config = event.data;
+      updateConfig(config);
+    }
+  }
+  window.addEventListener("message", handleCommand);
+}
+
+function updateConfig(config) {
+  document.documentElement.style.fontSize = `${config.fontsize * 4}px`;
+}
+
+async function initConfig() {
+  const config = await call("config");
+  updateConfig(config);
+}
+
 function plugin() {
   addStyle();
   addContextMenu();
   addTurnPageByWheel();
   addTurnPageByKeyboard();
+  addCommandHandler();
+  initConfig();
   console.log("plugin injected!");
 }
 window.onload = function () {

@@ -101,6 +101,19 @@ const api = {
       id: book.key.substr(7),
     }));
   },
+  async setConfig(event, book, config) {
+    await db.put(`/book/config/${book}`, config);
+  },
+  async config(event, data) {
+    try {
+      const result = await db.get(`/book/config/${data.book}`);
+      return result;
+    } catch (err) {
+      return {
+        fontsize: 4,
+      };
+    }
+  },
   async recovery(event, data) {
     const { params } = data;
     const { path } = params[0];
