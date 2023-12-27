@@ -1,17 +1,16 @@
 <script setup>
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useRuntimeStore } from '../stores/runtime'
 const store = useRuntimeStore()
 const route = useRoute()
+const router = useRouter()
 const book = computed(() => store.books.filter(b => b.id == route.query.id)[0])
 const chapid = ref(null)
 watch(() => book.value, async () => {
     if (book.value) {
-        bookConfig.value = await api.call('config', { book: book.value.id })
-        chapid.value = route.query.chap || book.value.toc[0].href
-        console.log(book.value, bookConfig.value)
+        bookChange()
     }
 })
 
@@ -45,15 +44,21 @@ async function msgCallback(event) {
         prevPage()
     } else if (event.data.type && event.data.type == 'call') {
         let result;
+        console.log('call sub', event.data)
         if (event.data.name == 'prompt') {
             result = await new Promise(r => {
                 promptOpen.value = true
                 const unwatch = watch(() => promptOpen.value, () => {
                     unwatch()
-                    console.log('dialog closed', promptValue.value)
                     r(promptValue.value)
                 })
             })
+        } else if (event.data.name == 'progress') {
+            bookConfig.value = {
+                ...bookConfig.value,
+                chap: chapid.value,
+                progress: event.data.params[0]
+            }
         } else {
             result = await api.call(event.data.name, {
                 book: book.value.id,
@@ -73,6 +78,9 @@ const promptOpen = ref(false)
 const promptValue = ref('')
 onMounted(() => {
     window.addEventListener('message', msgCallback)
+    if (book.value) {
+        bookChange()
+    }
 })
 onUnmounted(() => {
     window.removeEventListener('message', msgCallback)
@@ -88,6 +96,20 @@ watch(bookConfig, async () => {
     await api.call('setConfig', book.value.id, { ...bookConfig.value })
     iframeSend({ ...bookConfig.value, name: 'config' })
 }, { deep: true })
+async function bookChange() {
+    bookConfig.value = await api.call('config', { book: book.value.id })
+    chapid.value = route.query.chap || bookConfig.value.chap || book.value.toc[0].href
+    if (bookConfig.value.progress) {
+        setTimeout(() => {
+            iframeSend({
+                name: 'setProgress',
+                progress: bookConfig.value.progress
+            }, '*')
+
+        }, 1000);
+    }
+}
+
 </script>
 <template>
     <div v-if="book">
@@ -204,13 +226,9 @@ watch(bookConfig, async () => {
                             </DropdownMenuSubContent>
                         </DropdownMenuPortal>
                     </DropdownMenuSub>
-                    <DropdownMenuItem value="New Window"
+                    <DropdownMenuItem @click="router.push(`/`)"
                         class="group text-[13px] leading-none text-grass11 rounded-[3px] flex items-center h-[25px] px-[5px] relative pl-[25px] select-none outline-none data-[disabled]:text-mauve8 data-[disabled]:pointer-events-none data-[highlighted]:bg-green9 data-[highlighted]:text-green1">
-                        New Window
-                        <div
-                            class="ml-auto pl-[20px] text-mauve11 group-data-[highlighted]:text-white group-data-[disabled]:text-mauve8">
-                            ⌘+N
-                        </div>
+                        返回
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenuPortal>

@@ -10,6 +10,9 @@ img {
 p{
     line-height:200% !important;
 }
+ruby > rt{
+    font-size: 70%  !important;
+}
 #customContextMenu {
     display: none;
     position: absolute;
@@ -216,6 +219,7 @@ function addTurnPageByWheel() {
       isAtBottom = scrollY + windowHeight + tolerance >= documentHeight;
     }
     isScrolling = setTimeout(function () {
+      call("progress", window.scrollY / document.documentElement.scrollHeight);
       if (event.deltaY < 0) {
         if (isAtTop) {
           window.parent.postMessage("prevpage", "*");
@@ -245,6 +249,12 @@ function addCommandHandler() {
     if (event.data.name == "config") {
       const config = event.data;
       updateConfig(config);
+    } else if (event.data.name == "setProgress") {
+      const progress = event.data.progress;
+      window.scrollTo({
+        top: document.documentElement.scrollHeight * progress,
+        behavior: "smooth",
+      });
     }
   }
   window.addEventListener("message", handleCommand);
