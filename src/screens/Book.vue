@@ -43,12 +43,20 @@ onMounted(() => {
         }
     }
 
-    window.addEventListener('message', function (event) {
+    window.addEventListener('message', async function (event) {
         console.log('received from client', event)
         if (event.data == 'nextpage') {
             nextPage()
         } else if (event.data == 'prevpage') {
             prevPage()
+        } else if (event.data.type && event.data.type == 'call') {
+            const result = await api.call(event.data.name, ...event.data.params)
+            console.log('api call in parent got', result)
+            event.source.postMessage({
+                type: 'call result',
+                name: event.data.name,
+                result
+            }, '*')
         }
     })
 })

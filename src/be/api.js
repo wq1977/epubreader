@@ -36,14 +36,9 @@ async function serveXHTML(ctx, next) {
       }
     }
     //给html添加特定的script header
-    const extraStyle = `
-img {
-  max-width: 100%;
-}    
-    `;
     html = html.replace(
       "</head>",
-      `<style>${extraStyle}</style>\n<script src="/reader.js"></script>\n</header>`
+      `<script src="/reader.js"></script>\n</header>`
     );
     ctx.body = html;
   } else {
@@ -104,6 +99,10 @@ const api = {
       ...book.value,
       id: book.key.substr(7),
     }));
+  },
+  pinyin(event, text) {
+    const { pinyin } = require("pinyin");
+    return pinyin(text);
   },
   async loadBook(event, id) {
     const targetPath = require("path").join(booksRoot, `${id}.epub`);
