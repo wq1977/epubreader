@@ -129,7 +129,8 @@ const api = {
     const { params } = data;
     const text = params[0];
     shell.openExternal(
-      `https://zh.wiktionary.org/wiki/${encodeURIComponent(text)}`
+      `https://www.zdic.net/hans/${encodeURIComponent(text)}`
+      // `https://zh.wikipedia.org/wiki/${encodeURIComponent(text)}`
     );
   },
   pinyin(event, data) {

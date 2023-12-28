@@ -5,7 +5,8 @@ img {
     max-width: 100%;
 }    
 .qgmark{
-    background-color: #ffcc00;
+  text-decoration: underline;
+  text-decoration-color: #AAA;
 }
 .qgmark > .pz {
   background-color: #EEE;
@@ -21,13 +22,14 @@ ruby > rt{
     position: absolute;
     background-color: #f1f1f1;
     border: 1px solid #d4d4d4;
+    font-size: 12px;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
   }
 
   #customContextMenu a {
     color: black;
-    padding: 12px 16px;
+    padding: 8px 16px;
     text-decoration: none;
     display: block;
   }
@@ -241,32 +243,8 @@ function addTurnPageByWheel() {
     isAtTop = null;
   document.addEventListener("wheel", function (event) {
     clearTimeout(isScrolling);
-    if (isAtTop == null) {
-      var scrollY = window.scrollY;
-      var tolerance = 2;
-      isAtTop = scrollY - 2 <= 0;
-    }
-    if (isAtBottom == null) {
-      var documentHeight = document.documentElement.scrollHeight;
-      var windowHeight =
-        window.innerHeight || document.documentElement.clientHeight;
-      var scrollY = window.scrollY;
-      var tolerance = 2;
-      isAtBottom = scrollY + windowHeight + tolerance >= documentHeight;
-    }
     isScrolling = setTimeout(function () {
       call("progress", window.scrollY / document.documentElement.scrollHeight);
-      if (event.deltaY < 0) {
-        if (isAtTop) {
-          window.parent.postMessage("prevpage", "*");
-        }
-      } else {
-        if (isAtBottom) {
-          window.parent.postMessage("nextpage", "*");
-        }
-      }
-      isAtBottom = null;
-      isAtTop = null;
     }, 200);
   });
 }
