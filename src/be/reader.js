@@ -7,6 +7,9 @@ img {
 .qgmark{
     background-color: #ffcc00;
 }
+.qgmark > .pz {
+  background-color: #EEE;
+}
 p{
     line-height:200% !important;
 }
@@ -58,7 +61,7 @@ async function call(name, ...params) {
 
 async function doRemovePizhu() {
   const text = window.getSelection().toString();
-  if (!text || text.length > 10) {
+  if (!text) {
     console.log("不能注音");
     return;
   }
@@ -77,7 +80,7 @@ async function doRemovePizhu() {
 
 async function doRemovePinyin() {
   const text = window.getSelection().toString();
-  if (!text || text.length > 10) {
+  if (!text) {
     console.log("不能注音");
     return;
   }
@@ -93,20 +96,26 @@ async function doRemovePinyin() {
     }
   }
   range.deleteContents();
-  range.insertNode(document.createTextNode(div.innerText));
+  for (let node of [...div.childNodes].reverse()) {
+    range.insertNode(node);
+  }
+
   await save();
 }
 
 async function doPizhu() {
   const text = window.getSelection().toString();
-  if (!text || text.length > 10) {
+  if (!text) {
     console.log("不能注音");
     return;
   }
   const result = await call("prompt", "你想说点什么？");
-  console.log("call prompt return", result);
   if (result) {
-    var replacementHTML = `<span class="qgmark">${text}</span><span class="pz"><img class="pi" src="../Images/pp.jpg">${result}</span>`;
+    var range = getSelection().getRangeAt(0);
+    var selectedHtml = range.cloneContents();
+    const div = document.createElement("div");
+    div.appendChild(selectedHtml);
+    var replacementHTML = `<span class="qgmark">${div.innerHTML}<span class="pz"><img class="pi" src="../Images/pp.jpg">${result}</span></span>`;
     const newnode = document.createElement("span");
     newnode.innerHTML = replacementHTML;
     var range = getSelection().getRangeAt(0);
@@ -116,8 +125,32 @@ async function doPizhu() {
   }
 }
 
+async function doEdit() {
+  var range = getSelection().getRangeAt(0);
+  let node = range.startContainer;
+  if (node.nodeType === Node.TEXT_NODE) {
+    node = node.parentNode;
+  }
+  node.contentEditable = true;
+  node.onblur = async () => {
+    node.removeAttribute("contentEditable");
+    await save();
+  };
+}
+
 async function doSearch() {
-  const text = window.getSelection().toString();
+  var range = getSelection().getRangeAt(0);
+  var selectedHtml = range.cloneContents();
+  const div = document.createElement("div");
+  div.appendChild(selectedHtml);
+  const words = div.querySelectorAll("ruby");
+  for (let word of [...words]) {
+    const pinyin = word.querySelector("rt");
+    if (pinyin) {
+      word.removeChild(pinyin);
+    }
+  }
+  const text = div.innerText.trim();
   if (!text || text.length > 10) {
     console.log("不能注音");
     return;
@@ -170,6 +203,8 @@ async function handleMenuClick(e, item) {
     await doRemovePizhu();
   } else if (item.textContent == "搜索") {
     await doSearch();
+  } else if (item.textContent == "编辑") {
+    await doEdit();
   } else if (item.textContent == "恢复页面") {
     await call("recovery", {
       path: location.pathname,
@@ -193,7 +228,8 @@ function addContextMenu() {
   <a href="#">搜索</a>
   <a href="#">恢复页面</a>
   <a href="#">移除注音</a>
-  <a href="#">移除批注</a>`;
+  <a href="#">移除批注</a>
+  <a href="#">编辑</a>`;
   for (let item of [...div.querySelectorAll("a")]) {
     item.onclick = (e) => handleMenuClick(e, item);
   }
@@ -262,6 +298,9 @@ function addCommandHandler() {
 
 function updateConfig(config) {
   document.documentElement.style.fontSize = `${config.fontsize * 4}px`;
+  document.body.style.marginLeft = `${config.margin}vw`;
+  document.body.style.marginRight = `${config.margin}vw`;
+  console.log("config updated", config);
 }
 
 async function initConfig() {

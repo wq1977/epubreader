@@ -111,6 +111,7 @@ const api = {
     } catch (err) {
       return {
         fontsize: 4,
+        margin: 1,
       };
     }
   },
