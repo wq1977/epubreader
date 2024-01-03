@@ -114,7 +114,7 @@ async function bookChange() {
 <template>
     <div v-if="book">
         <div class="flex">
-            <iframe v-if="chapid" ref="iframe" class="flex-1 h-screen border p-5" :src="store.resourceUrl(book.id, chapid)"
+            <iframe v-if="chapid" ref="iframe" class="flex-1 h-screen  p-0" :src="store.resourceUrl(book.id, chapid)"
                 frameborder="0"></iframe>
         </div>
         <DialogRoot v-model:open="promptOpen">

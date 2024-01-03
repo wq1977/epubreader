@@ -8,8 +8,19 @@ img {
   text-decoration: underline;
   text-decoration-color: #AAA;
 }
+html {
+  background-color: #1a1a1a;
+  color: #ffffffE0;
+}
+p.poetry{
+  color: #ffff00C0 !important;
+}
+
+p.poem{
+  color: #ffff00C0 !important;
+}
+
 .qgmark > .pz {
-  background-color: #EEE;
 }
 p{
     line-height:200% !important;
@@ -20,15 +31,17 @@ ruby > rt{
 #customContextMenu {
     display: none;
     position: absolute;
-    background-color: #f1f1f1;
     border: 1px solid #d4d4d4;
     font-size: 12px;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
   }
 
+  span.pz {
+    color: #FFFFFF80 !important;
+  }
+
   #customContextMenu a {
-    color: black;
     padding: 8px 16px;
     text-decoration: none;
     display: block;
