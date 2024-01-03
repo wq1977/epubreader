@@ -133,11 +133,16 @@ async function doEdit() {
   if (node.nodeType === Node.TEXT_NODE) {
     node = node.parentNode;
   }
-  node.contentEditable = true;
-  node.onblur = async () => {
-    node.removeAttribute("contentEditable");
-    await save();
-  };
+  if (node.nodeName == "RT" || node.classList.contains("pz")) {
+    const newString = await await call(
+      "prompt",
+      "你想说点什么？",
+      node.innerText
+    );
+    if (newString) {
+      node.innerText = newString;
+    }
+  }
 }
 
 async function doSearch() {
@@ -205,8 +210,6 @@ async function handleMenuClick(e, item) {
     await doRemovePizhu();
   } else if (item.textContent == "搜索") {
     await doSearch();
-  } else if (item.textContent == "编辑") {
-    await doEdit();
   } else if (item.textContent == "恢复页面") {
     await call("recovery", {
       path: location.pathname,
@@ -230,8 +233,7 @@ function addContextMenu() {
   <a href="#">搜索</a>
   <a href="#">恢复页面</a>
   <a href="#">移除注音</a>
-  <a href="#">移除批注</a>
-  <a href="#">编辑</a>`;
+  <a href="#">移除批注</a>`;
   for (let item of [...div.querySelectorAll("a")]) {
     item.onclick = (e) => handleMenuClick(e, item);
   }
@@ -286,6 +288,12 @@ async function initConfig() {
   updateConfig(config);
 }
 
+function addClickEdit() {
+  document.addEventListener("click", function (event) {
+    doEdit(event);
+  });
+}
+
 function plugin() {
   addStyle();
   addContextMenu();
@@ -293,6 +301,7 @@ function plugin() {
   addTurnPageByKeyboard();
   addCommandHandler();
   initConfig();
+  addClickEdit();
   console.log("plugin injected!");
 }
 window.onload = function () {

@@ -48,6 +48,9 @@ async function msgCallback(event) {
         if (event.data.name == 'prompt') {
             result = await new Promise(r => {
                 promptOpen.value = true
+                if (event.data.params[1]) {
+                    promptValue.value = event.data.params[1]
+                }
                 const unwatch = watch(() => promptOpen.value, () => {
                     unwatch()
                     r(promptValue.value)
