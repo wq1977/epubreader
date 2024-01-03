@@ -309,6 +309,14 @@ function addClickEdit() {
   });
 }
 
+function showAfterLoad() {
+  document.fonts.ready.then(() => {
+    setTimeout(() => {
+      document.body.style.display = "block";
+    }, 1000);
+  });
+}
+
 function plugin() {
   addStyle();
   addContextMenu();
@@ -317,6 +325,7 @@ function plugin() {
   addCommandHandler();
   initConfig();
   addClickEdit();
+  showAfterLoad();
   console.log("plugin injected!");
 }
 window.onload = function () {

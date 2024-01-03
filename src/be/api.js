@@ -39,7 +39,7 @@ async function serveXHTML(ctx, next) {
     //给html添加特定的script header
     html = html.replace(
       "</head>",
-      `<script src="/reader.js"></script>\n</header>`
+      `<script src="/reader.js"></script><style>body{display:none;}</style>\n</head>`
     );
     ctx.body = html;
   } else {
