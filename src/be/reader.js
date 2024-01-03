@@ -290,7 +290,9 @@ async function initConfig() {
 
 function addClickEdit() {
   document.addEventListener("click", function (event) {
-    doEdit(event);
+    if (event.metaKey) {
+      doEdit(event);
+    }
   });
 }
 
