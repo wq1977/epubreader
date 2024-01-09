@@ -318,6 +318,10 @@ function showAfterLoad() {
   });
 }
 
+function setTitle() {
+  call("title", document.title);
+}
+
 function plugin() {
   addStyle();
   addContextMenu();
@@ -327,6 +331,7 @@ function plugin() {
   initConfig();
   addClickEdit();
   showAfterLoad();
+  setTitle();
   console.log("plugin injected!");
 }
 window.onload = function () {

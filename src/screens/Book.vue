@@ -56,6 +56,9 @@ async function msgCallback(event) {
                     r(promptValue.value)
                 })
             })
+        } else if (event.data.name == 'title') {
+            const title = event.data.params[0]
+            document.title = title
         } else if (event.data.name == 'progress') {
             bookConfig.value = {
                 ...bookConfig.value,
