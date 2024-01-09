@@ -32,6 +32,7 @@ ruby > rt{
     display: none;
     position: absolute;
     border: 1px solid #d4d4d4;
+    background-color:white;
     font-size: 12px;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
