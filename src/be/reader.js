@@ -4,13 +4,16 @@ function addStyle() {
 img {
     max-width: 100%;
 }    
+span.tsz {
+  color: #ffffffE0 !important;
+}
 .qgmark{
   text-decoration: underline;
   text-decoration-color: #AAA;
 }
-html {
+html{
   background-color: #1a1a1a;
-  color: #ffffffE0;
+  color: #ffffffE0 !important;
 }
 p.poetry{
   color: #ffff00C0 !important;
