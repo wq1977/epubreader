@@ -54,6 +54,7 @@ async function msgCallback(event) {
                 const unwatch = watch(() => promptOpen.value, () => {
                     unwatch()
                     r(promptValue.value)
+                    promptValue.value = ""
                 })
             })
         } else if (event.data.name == 'title') {
@@ -113,6 +114,12 @@ async function bookChange() {
     }
 }
 
+function autoResize(e) {
+    const textarea = e.target
+    textarea.style.height = 'auto'; // 重置高度，以便获取新的滚动高度
+    textarea.style.height = (textarea.scrollHeight) + 'px'; // 设置新的高度
+}
+
 </script>
 <template>
     <div v-if="book">
@@ -132,8 +139,8 @@ async function bookChange() {
                         请在下面输入内容.
                     </DialogDescription>
                     <fieldset class="mb-[15px] flex items-center gap-5">
-                        <input id="name" v-model="promptValue"
-                            class="text-grass11 shadow-green7 focus:shadow-green8 inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]">
+                        <textarea id="name" @input="autoResize" v-model="promptValue" wrap="soft"
+                            class="text-grass11 leading-6 h-auto shadow-green7 p-[0.25em] min-h-[1.5em] resize-none overflow-y-hidden focus:shadow-green8 inline-flex h-[35px] w-full flex-1 items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]" />
                     </fieldset>
                     <div class="mt-[25px] flex justify-end">
                         <DialogClose as-child>
