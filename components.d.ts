@@ -7,21 +7,6 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    DialogClose: typeof import('radix-vue')['DialogClose']
-    DialogContent: typeof import('radix-vue')['DialogContent']
-    DialogDescription: typeof import('radix-vue')['DialogDescription']
-    DialogOverlay: typeof import('radix-vue')['DialogOverlay']
-    DialogPortal: typeof import('radix-vue')['DialogPortal']
-    DialogRoot: typeof import('radix-vue')['DialogRoot']
-    DialogTitle: typeof import('radix-vue')['DialogTitle']
-    DropdownMenuContent: typeof import('radix-vue')['DropdownMenuContent']
-    DropdownMenuItem: typeof import('radix-vue')['DropdownMenuItem']
-    DropdownMenuPortal: typeof import('radix-vue')['DropdownMenuPortal']
-    DropdownMenuRoot: typeof import('radix-vue')['DropdownMenuRoot']
-    DropdownMenuSub: typeof import('radix-vue')['DropdownMenuSub']
-    DropdownMenuSubContent: typeof import('radix-vue')['DropdownMenuSubContent']
-    DropdownMenuSubTrigger: typeof import('radix-vue')['DropdownMenuSubTrigger']
-    DropdownMenuTrigger: typeof import('radix-vue')['DropdownMenuTrigger']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Tree: typeof import('./src/components/Tree.vue')['default']

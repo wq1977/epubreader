@@ -157,7 +157,7 @@ async function doEdit() {
       node.innerText
     );
     if (newString) {
-      node.innerText = newString;
+      node.innerHTML = `<img class="pi" src="../Images/pp.jpg">${newString}`;
     }
   }
 }
