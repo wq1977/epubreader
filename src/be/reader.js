@@ -157,7 +157,9 @@ async function doEdit() {
       node.innerText
     );
     if (newString) {
-      node.innerHTML = `<img class="pi" src="../Images/pp.jpg">${newString}`;
+      node.innerHTML = node.classList.contains("pz")
+        ? `<img class="pi" src="../Images/pp.jpg">${newString}`
+        : newString;
     }
   }
 }
